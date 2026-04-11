@@ -140,6 +140,11 @@ function pridat(typ) {
 
 function smazat(den, typ, index) {
   let data = nactiData();
+  let zaznam = data[den][typ][index];
+  let text = typ === "prebal" ? "Přebalování" : "Kojení";
+
+  if (!confirm(`Opravdu chceš smazat: ${text} – ${zaznam.cas}?`)) return;
+
   data[den][typ].splice(index, 1);
   ulozData(data);
   zobrazDnes();
@@ -162,7 +167,7 @@ function vykresli(den, elementId) {
   let div = document.getElementById(elementId);
   div.innerHTML = "";
 
-  if (!data[den]) return;
+  if (!den || !data[den]) return;
 
   ["prebal", "kojeni"].forEach(typ => {
     data[den][typ].forEach((z, i) => {
@@ -232,7 +237,6 @@ function initDarkMode() {
 
 // init
 
-document.getElementById("vyber").value = dnesniDatum();
 initDarkMode();
 zobrazDnes();
 </script>
