@@ -204,7 +204,7 @@ function zobrazDen() {
   vykresli(den, "historie");
 }
 
-/* ✅ NOVÝ EXPORT DO PDF */
+/* JEDNODUCHÝ FUNKČNÍ PDF EXPORT */
 function exportPDF() {
   const { jsPDF } = window.jspdf;
   let doc = new jsPDF();
@@ -213,7 +213,7 @@ function exportPDF() {
   let y = 10;
 
   doc.setFontSize(16);
-  doc.text("Bejbísek – přehled", 10, y);
+  doc.text("Bejbisek - prehled", 10, y);
   y += 10;
 
   let dny = Object.keys(data).sort();
@@ -225,8 +225,8 @@ function exportPDF() {
 
     ["prebal", "kojeni"].forEach(typ => {
       data[den][typ].forEach((z, i) => {
-        let text = typ === "prebal" ? "Přebalování" : "Kojení";
-        doc.text(`${text} – ${z.cas} (${i+1}.)`, 12, y);
+        let text = typ === "prebal" ? "Prebalovani" : "Kojeni";
+        doc.text(`${text} - ${z.cas} (${i+1}.)`, 12, y);
         y += 6;
 
         if (y > 280) {
