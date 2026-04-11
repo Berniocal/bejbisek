@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bejbísek</title>
+<link rel="manifest" href="manifest.json">
+</head>
+
+<style>
+body { font-family: Arial; text-align:center; margin:10px;}
+.buttons{display:flex;gap:10px;margin:15px 0;}
+button{flex:1;padding:15px;font-size:18px;border-radius:10px;border:none;color:white;}
+.prebal{background:#4CAF50;}
+.kojeni{background:#2196F3;}
+.export{background:#555;margin-top:10px;}
+.item{display:flex;justify-content:space-between;}
+.actions span{cursor:pointer;margin-left:10px;}
+
+@media print {
+  .no-print { display:none; }
+  #datum { display:none; } /* odstranění velkého data */
+}
+</style>
+
+<body>
+
+<h1 id="datum"></h1>
+
+<div class="buttons no-print">
+<button class="prebal" onclick="pridat('prebal')">Přebalování</button>
+<button class="kojeni" onclick="pridat('kojeni')">Kojení</button>
+</div>
+
+<button class="export no-print" onclick="exportPDF()">Export do PDF</button>
+
+<div id="dnes"></div>
+<div id="printArea" style="display:none"></div>
+
+<script>
+if ('serviceWorker' in navigator) {
+ navigator.serviceWorker.register('sw.js');
+}
+
+function dnesniDatum(){return new Date().toISOString().split('T')[0];}
+function formatDatum(d){return new Date(d).toLocaleDateString('cs-CZ');}
+function formatCas(){return new Date().toLocaleTimeString('cs-CZ',{hour:'2-digit',minute:'2-digit'});}
+
+function nacti(){return JSON.parse(localStorage.getItem("data"))||{};}
+function uloz(d){localStorage.setItem("data",JSON.stringify(d));}
+
+function pridat(t){
+ let d=nacti(); let dnes=dnesniDatum();
+ if(!d[dnes]) d[dnes]={prebal:[],kojeni:[]};
+ d[dnes][t].push({cas:formatCas()});
+ uloz(d); zobraz();
+}
+
+function smazat(den,t,i){
+ let d=nacti(); d[den][t].splice(i,1); uloz(d); zobraz();
+}
+
+function upravit(den,t,i){
+ let d=nacti();
+ let n=prompt("HH:MM",d[den][t][i].cas);
+ if(n){d[den][t][i].cas=n; uloz(d); zobraz();}
+}
+
+function zobraz(){
+ let d=nacti(); let dnes=dnesniDatum();
+ document.getElementById("datum").innerText=formatDatum(dnes);
+ let div=document.getElementById("dnes"); div.innerHTML="";
+ if(!d[dnes]) return;
+ ["prebal","kojeni"].forEach(t=>{
+  d[dnes][t].forEach((z,i)=>{
+   let txt=t==="prebal"?"🟢 Přebalování":"🔵 Kojení";
+   div.innerHTML+=`<div class="item">
+   <span>${txt} – ${z.cas} (${i+1}.)</span>
+   <span class="actions">
+   <span onclick="upravit('${dnes}','${t}',${i})">✏️</span>
+   <span onclick="smazat('${dnes}','${t}',${i})">❌</span>
+   </span></div>`;
+  });
+ });
+}
+
+function exportPDF(){
+ let data=nacti();
+ let p=document.getElementById("printArea");
+ p.innerHTML="<h1>Bejbísek – přehled</h1>";
+ Object.keys(data).sort().forEach(den=>{
+  p.innerHTML+=`<h3>${formatDatum(den)}</h3>`;
+  ["prebal","kojeni"].forEach(t=>{
+   data[den][t].forEach((z,i)=>{
+    let txt=t==="prebal"?"Přebalování":"Kojení";
+    p.innerHTML+=`${txt} – ${z.cas} (${i+1}.)<br>`;
+   });
+  });
+ });
+ p.style.display="block";
+ window.print();
+ p.style.display="none";
+}
+
+zobraz();
+</script>
+
+</body>
+</html>
