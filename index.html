@@ -104,6 +104,11 @@ input[type="date"] { font-size: 16px; padding: 5px; }
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
+
+// auto refresh při nové verzi
+navigator.serviceWorker.addEventListener('controllerchange', () => {
+  window.location.reload();
+});
 }
 
 function dnesniDatum() {
@@ -239,6 +244,11 @@ function initDarkMode() {
 
 initDarkMode();
 zobrazDnes();
+</script>
+
+<!-- UPDATED SERVICE WORKER -->
+<script>
+// Tento blok je jen pro přehled – skutečný SW je v sw.js
 </script>
 
 </body>
