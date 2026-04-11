@@ -6,6 +6,8 @@
 <title>Bejbísek</title>
 <link rel="manifest" href="manifest.json">
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 body {
   font-family: Arial, sans-serif;
@@ -105,10 +107,9 @@ input[type="date"] { font-size: 16px; padding: 5px; }
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
 
-// auto refresh při nové verzi
-navigator.serviceWorker.addEventListener('controllerchange', () => {
-  window.location.reload();
-});
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    window.location.reload();
+  });
 }
 
 function dnesniDatum() {
@@ -203,31 +204,42 @@ function zobrazDen() {
   vykresli(den, "historie");
 }
 
+/* ✅ NOVÝ EXPORT DO PDF */
 function exportPDF() {
-  let data = nactiData();
-  let printDiv = document.getElementById("printArea");
+  const { jsPDF } = window.jspdf;
+  let doc = new jsPDF();
 
-  printDiv.innerHTML = "<h1>Bejbísek – přehled</h1>";
+  let data = nactiData();
+  let y = 10;
+
+  doc.setFontSize(16);
+  doc.text("Bejbísek – přehled", 10, y);
+  y += 10;
 
   let dny = Object.keys(data).sort();
 
   dny.forEach(den => {
-    let html = `<div class='day-section'><div><strong>${formatDatum(den)}</strong></div>`;
+    doc.setFontSize(12);
+    doc.text(formatDatum(den), 10, y);
+    y += 6;
 
     ["prebal", "kojeni"].forEach(typ => {
       data[den][typ].forEach((z, i) => {
         let text = typ === "prebal" ? "Přebalování" : "Kojení";
-        html += `${text} – ${z.cas} (${i+1}.)<br>`;
+        doc.text(`${text} – ${z.cas} (${i+1}.)`, 12, y);
+        y += 6;
+
+        if (y > 280) {
+          doc.addPage();
+          y = 10;
+        }
       });
     });
 
-    html += "</div>";
-    printDiv.innerHTML += html;
+    y += 4;
   });
 
-  printDiv.style.display = "block";
-  window.print();
-  printDiv.style.display = "none";
+  doc.save("bejbisek.pdf");
 }
 
 function toggleDarkMode() {
@@ -241,14 +253,8 @@ function initDarkMode() {
 }
 
 // init
-
 initDarkMode();
 zobrazDnes();
-</script>
-
-<!-- UPDATED SERVICE WORKER -->
-<script>
-// Tento blok je jen pro přehled – skutečný SW je v sw.js
 </script>
 
 </body>
