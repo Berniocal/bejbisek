@@ -283,9 +283,9 @@ zobrazDnes();
 
 <script>
 (function(){
-  const NEVER_KEY = "pwa_install_never_ask";
-  const LATER_KEY = "pwa_install_later_until";
-
+ const APP_ID = location.pathname.replaceAll("/", "_") || "home";
+const NEVER_KEY = "pwa_install_never_ask_" + APP_ID;
+const LATER_KEY = "pwa_install_later_until_" + APP_ID;
   let deferredInstallPrompt = null;
 
   function isStandalone(){
